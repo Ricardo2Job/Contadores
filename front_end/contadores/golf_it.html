@@ -4,107 +4,282 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contador Golf It</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../globals.css">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #07050f;
-    --bg2: #0e0a1a;
-    --purple: #a855f7;
-    --purple-border: rgba(168,85,247,0.25);
-    --purple-glow: rgba(168,85,247,0.08);
-    --txt: #ede8ff;
-    --txt2: #6b5f8a;
-    --mono: 'Space Mono', monospace;
-    --display: 'Syne', sans-serif;
-  }
-  body {
-    background: var(--bg);
-    color: var(--txt);
-    font-family: var(--mono);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(168,85,247,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(168,85,247,0.04) 1px, transparent 1px);
-    background-size: 44px 44px;
-    pointer-events: none;
-  }
-  .orb {
-    position: fixed;
-    width: 500px; height: 500px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-  }
-  .wrap {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-  .label {
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--purple);
-  }
-  .title {
-    font-family: var(--display);
-    font-size: 2.2rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--txt);
-  }
-  .badge {
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 5px 14px;
-    border: 1px solid var(--purple-border);
-    color: var(--txt2);
-    border-radius: 2px;
-    margin-top: 0.5rem;
-  }
-  .back {
-    margin-top: 2rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0.6rem 1.2rem;
-    border: 1px solid var(--purple-border);
-    color: var(--txt2);
-    text-decoration: none;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    border-radius: 2px;
-    transition: all 0.2s;
-  }
-  .back:hover { border-color: var(--purple); color: var(--purple); }
+  body { display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-x:hidden; }
+
+  .topbar { position:fixed; top:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:1rem 2rem; background:rgba(7,5,15,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); z-index:100; }
+  .page-title { font-family:var(--display); font-size:1rem; font-weight:700; }
+  .page-title span { color:var(--purple); }
+  .status { display:inline-flex; align-items:center; gap:7px; font-size:11px; color:var(--txt2); }
+  .status-dot { width:7px; height:7px; border-radius:50%; background:var(--txt3); flex-shrink:0; }
+  .status-dot.connected { background:#22c55e; box-shadow:0 0 6px #22c55e; }
+  .status-dot.loading { background:var(--purple); animation:pulse 1s ease-in-out infinite; }
+  .status-dot.error { background:#ef4444; }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+  .content { position:relative; z-index:1; width:100%; max-width:960px; padding:5.5rem 1.5rem 4rem; }
+
+  .page-header { margin-bottom:2rem; animation:fadeUp 0.4s ease both; }
+  .page-header h1 { font-family:var(--display); font-size:clamp(1.6rem,4vw,2.4rem); font-weight:800; margin-top:0.3rem; }
+
+  /* SAVE BAR */
+  .save-bar { display:flex; align-items:center; justify-content:space-between; padding:0.8rem 1.2rem; background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:1.5rem; animation:fadeUp 0.4s 0.05s ease both; opacity:0; animation-fill-mode:forwards; }
+  .changes-info { font-size:12px; color:var(--txt2); }
+  .changes-info strong { color:var(--purple); }
+  .btn-save { padding:0.5rem 1.4rem; background:var(--purple); border:none; color:#07050f; font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; border-radius:var(--radius); transition:all var(--transition); }
+  .btn-save:hover { background:#c084fc; }
+  .btn-save:disabled { opacity:0.35; cursor:not-allowed; }
+
+  /* PLAYERS GRID */
+  .players-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:1.5rem; animation:fadeUp 0.4s 0.1s ease both; opacity:0; animation-fill-mode:forwards; }
+
+  .player-card { background:var(--bg2); padding:1.3rem; display:flex; flex-direction:column; gap:0.9rem; transition:background var(--transition); }
+  .player-card:hover { background:var(--bg3); }
+  .player-card.leader { background:rgba(168,85,247,0.07); }
+
+  .player-header { display:flex; align-items:center; justify-content:space-between; }
+  .player-name { font-family:var(--display); font-size:1rem; font-weight:700; }
+  .crown { font-size:14px; opacity:0; transition:opacity 0.3s; }
+  .player-card.leader .crown { opacity:1; }
+
+  .player-score { font-family:var(--display); font-size:3rem; font-weight:800; color:var(--purple); line-height:1; transition:transform 0.1s ease; }
+  .player-score.bump { transform:scale(1.15); }
+
+  .player-controls { display:flex; gap:6px; }
+  .btn-c { flex:1; padding:0.55rem; background:transparent; border:1px solid var(--border); color:var(--txt2); font-family:var(--mono); font-size:1rem; font-weight:700; cursor:pointer; border-radius:var(--radius); transition:all var(--transition); }
+  .btn-c.plus:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-glow); }
+  .btn-c.minus:hover { border-color:rgba(239,68,68,0.5); color:#ef4444; background:rgba(239,68,68,0.08); }
+  .btn-c:disabled { opacity:0.25; cursor:not-allowed; }
+
+  /* CHARTS */
+  .charts-wrap { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; animation:fadeUp 0.4s 0.2s ease both; opacity:0; animation-fill-mode:forwards; }
+  @media(max-width:640px){ .charts-wrap { grid-template-columns:1fr; } }
+
+  .chart-box { background:var(--bg2); padding:1.4rem; }
+  .chart-title { font-size:11px; letter-spacing:0.15em; text-transform:uppercase; color:var(--txt2); margin-bottom:1.2rem; }
+
+  /* BAR CHART */
+  .bar-list { display:flex; flex-direction:column; gap:10px; }
+  .bar-row { display:flex; flex-direction:column; gap:4px; }
+  .bar-label-row { display:flex; justify-content:space-between; font-size:12px; }
+  .bar-name { color:var(--txt); }
+  .bar-val { color:var(--purple); font-weight:700; }
+  .bar-track { height:6px; background:rgba(168,85,247,0.12); border-radius:3px; overflow:hidden; }
+  .bar-fill { height:100%; background:var(--purple); border-radius:3px; transition:width 0.6s cubic-bezier(.4,0,.2,1); }
+  .bar-fill.gold  { background:#f59e0b; }
+  .bar-fill.silver{ background:#94a3b8; }
+
+  /* PIE / RATIO */
+  .ratio-list { display:flex; flex-direction:column; gap:10px; }
+  .ratio-row { display:flex; flex-direction:column; gap:4px; }
+  .ratio-label-row { display:flex; justify-content:space-between; font-size:12px; }
+  .ratio-name { color:var(--txt); }
+  .ratio-pct { color:var(--txt2); }
+  .ratio-track { height:6px; background:rgba(168,85,247,0.12); border-radius:3px; overflow:hidden; }
+  .ratio-fill { height:100%; border-radius:3px; transition:width 0.6s cubic-bezier(.4,0,.2,1); }
 </style>
 </head>
-<body>
-<div class="orb"></div>
-<div class="wrap">
-  <p class="label">// contadores</p>
-  <h1 class="title">Contador Golf It</h1>
-  <div class="badge">en construcción</div>
-  <a href="../main/index.html" class="back">← volver al inicio</a>
+<body class="grid-bg">
+<div class="glow-orb"></div>
+
+<div class="topbar">
+  <a href="../main/index.html" class="btn-back">← inicio</a>
+  <span class="page-title">Golf <span>It</span></span>
+  <div class="status">
+    <div class="status-dot loading" id="statusDot"></div>
+    <span id="statusText">conectando...</span>
+  </div>
 </div>
+
+<div class="content">
+  <div class="page-header">
+    <p class="section-label">// party game</p>
+    <h1>Golf It<span class="cursor"></span></h1>
+  </div>
+
+  <!-- SAVE BAR -->
+  <div class="save-bar">
+    <span class="changes-info">Cambios pendientes: <strong id="pendingCount">0</strong></span>
+    <button class="btn-save" id="btnSave" disabled onclick="guardarCambios()">Guardar cambios</button>
+  </div>
+
+  <!-- JUGADORES -->
+  <div class="players-grid" id="playersGrid"></div>
+
+  <!-- GRÁFICOS -->
+  <div class="charts-wrap">
+    <div class="chart-box">
+      <div class="chart-title">// victorias totales</div>
+      <div class="bar-list" id="barChart"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">// % de victorias</div>
+      <div class="ratio-list" id="ratioChart"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { cargarDatos, inicializarSiNoExiste } from '../../back_end/firebase.js';
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const COLECCION = 'contadores';
+  const DOCUMENTO = 'golf_it';
+  const JUGADORES = ["Ricardo","Vengador","SAI","Javier","Teniente"];
+  const COLORES   = ['#a855f7','#f59e0b','#22c55e','#38bdf8'];
+
+  const statusDot   = document.getElementById('statusDot');
+  const statusText  = document.getElementById('statusText');
+  const pendingEl   = document.getElementById('pendingCount');
+  const btnSave     = document.getElementById('btnSave');
+
+  let datos    = {};
+  let pendiente = {};
+  let cambios   = 0;
+
+  const valDefault = {};
+  JUGADORES.forEach(j => valDefault[j] = 0);
+
+  // ---- RENDER JUGADORES ----
+  function renderJugadores() {
+    const grid = document.getElementById('playersGrid');
+    grid.innerHTML = '';
+    const maxVal = Math.max(...JUGADORES.map(j => datos[j] ?? 0));
+
+    JUGADORES.forEach((nombre, i) => {
+      const val = datos[nombre] ?? 0;
+      const isLeader = val === maxVal && maxVal > 0;
+      const card = document.createElement('div');
+      card.className = 'player-card' + (isLeader ? ' leader' : '');
+      card.innerHTML = `
+        <div class="player-header">
+          <span class="player-name">${nombre}</span>
+          <span class="crown">👑</span>
+        </div>
+        <div class="player-score" id="score-${nombre}">${val}</div>
+        <div class="player-controls">
+          <button class="btn-c minus" onclick="restar('${nombre}')">−</button>
+          <button class="btn-c plus"  onclick="sumar('${nombre}')">+</button>
+        </div>`;
+      grid.appendChild(card);
+    });
+    renderCharts();
+  }
+
+  // ---- CHARTS ----
+  function renderCharts() {
+    const total = JUGADORES.reduce((s,j) => s + (datos[j]??0), 0);
+    const max   = Math.max(...JUGADORES.map(j => datos[j]??0), 1);
+
+    // Bar chart
+    const barEl = document.getElementById('barChart');
+    barEl.innerHTML = '';
+    const sorted = [...JUGADORES].sort((a,b) => (datos[b]??0)-(datos[a]??0));
+    sorted.forEach((nombre, i) => {
+      const val = datos[nombre] ?? 0;
+      const pct = Math.round((val / max) * 100);
+      const fillClass = i===0 ? 'gold' : i===1 ? 'silver' : '';
+      barEl.innerHTML += `
+        <div class="bar-row">
+          <div class="bar-label-row"><span class="bar-name">${nombre}</span><span class="bar-val">${val}</span></div>
+          <div class="bar-track"><div class="bar-fill ${fillClass}" style="width:${pct}%"></div></div>
+        </div>`;
+    });
+
+    // Ratio chart
+    const ratioEl = document.getElementById('ratioChart');
+    ratioEl.innerHTML = '';
+    if (total === 0) {
+      ratioEl.innerHTML = '<span style="font-size:12px;color:var(--txt3)">sin datos aún</span>';
+      return;
+    }
+    sorted.forEach((nombre, i) => {
+      const val = datos[nombre] ?? 0;
+      const pct = total > 0 ? Math.round((val/total)*100) : 0;
+      const color = COLORES[JUGADORES.indexOf(nombre)] || 'var(--purple)';
+      ratioEl.innerHTML += `
+        <div class="ratio-row">
+          <div class="ratio-label-row"><span class="ratio-name">${nombre}</span><span class="ratio-pct">${pct}%</span></div>
+          <div class="ratio-track"><div class="ratio-fill" style="width:${pct}%;background:${color}"></div></div>
+        </div>`;
+    });
+  }
+
+  // ---- BUMP ANIMATION ----
+  function bump(nombre) {
+    const el = document.getElementById(`score-${nombre}`);
+    if (!el) return;
+    el.classList.add('bump');
+    setTimeout(() => el.classList.remove('bump'), 130);
+  }
+
+  // ---- HANDLERS ----
+  window.sumar = (nombre) => {
+    datos[nombre] = (datos[nombre]??0) + 1;
+    pendiente[nombre] = datos[nombre];
+    cambios++;
+    document.getElementById(`score-${nombre}`).textContent = datos[nombre];
+    bump(nombre);
+    actualizarPendiente();
+    renderJugadores();
+  };
+
+  window.restar = (nombre) => {
+    if ((datos[nombre]??0) <= 0) return;
+    datos[nombre]--;
+    pendiente[nombre] = datos[nombre];
+    cambios++;
+    document.getElementById(`score-${nombre}`).textContent = datos[nombre];
+    bump(nombre);
+    actualizarPendiente();
+    renderJugadores();
+  };
+
+  function actualizarPendiente() {
+    pendingEl.textContent = cambios;
+    btnSave.disabled = cambios === 0;
+  }
+
+  // ---- GUARDAR ----
+  window.guardarCambios = async () => {
+    btnSave.disabled = true;
+    btnSave.textContent = 'Guardando...';
+    try {
+      const { db } = await import('../../back_end/firebase.js');
+      const ref = doc(db, COLECCION, DOCUMENTO);
+      await setDoc(ref, datos);
+      cambios = 0;
+      pendiente = {};
+      actualizarPendiente();
+      btnSave.textContent = '✓ Guardado';
+      setTimeout(() => { btnSave.textContent = 'Guardar cambios'; }, 2000);
+    } catch(e) {
+      console.error(e);
+      btnSave.textContent = 'Error — reintentar';
+      btnSave.disabled = false;
+    }
+  };
+
+  // ---- INIT ----
+  async function init() {
+    try {
+      await inicializarSiNoExiste(COLECCION, DOCUMENTO, valDefault);
+      const cargado = await cargarDatos(COLECCION, DOCUMENTO);
+      datos = { ...valDefault, ...(cargado ?? {}) };
+      renderJugadores();
+      statusDot.className    = 'status-dot connected';
+      statusText.textContent = 'conectado';
+    } catch(e) {
+      console.error(e);
+      statusDot.className    = 'status-dot error';
+      statusText.textContent = 'error de conexión';
+      datos = { ...valDefault };
+      renderJugadores();
+    }
+  }
+
+  init();
+</script>
 </body>
 </html>

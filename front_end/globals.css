@@ -1,0 +1,126 @@
+/* ============================================
+   GLOBALS.CSS — Variables globales de diseño
+   Cambia aquí y se aplica a toda la página
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+:root {
+  /* --- COLORES BASE --- */
+  --bg:           #07050f;   /* fondo principal */
+  --bg2:          #0e0a1a;   /* fondo secundario (cards, panels) */
+  --bg3:          #160f2a;   /* fondo hover */
+
+  /* --- COLORES DE ACENTO --- */
+  --purple:       #a855f7;   /* color principal neón */
+  --purple-dim:   #7c3aed;   /* purple más oscuro */
+  --purple-dark:  #4c1d95;   /* purple muy oscuro */
+  --purple-glow:  rgba(168, 85, 247, 0.15);
+  --purple-border:rgba(168, 85, 247, 0.25);
+
+  /* --- TEXTO --- */
+  --txt:          #ede8ff;   /* texto principal */
+  --txt2:         #9d8fc4;   /* texto secundario / muted */
+  --txt3:         #6b5f8a;   /* texto muy apagado */
+
+  /* --- BORDES --- */
+  --border:       rgba(168, 85, 247, 0.25);
+  --border-hover: rgba(168, 85, 247, 0.6);
+
+  /* --- TIPOGRAFÍA --- */
+  --mono:         'Space Mono', monospace;
+  --display:      'Syne', sans-serif;
+
+  /* --- EFECTOS --- */
+  --radius:       3px;
+  --transition:   0.2s ease;
+}
+
+/* ---- RESET BASE ---- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- BODY BASE ---- */
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: var(--mono);
+  min-height: 100vh;
+}
+
+/* ---- GRID BACKGROUND (compartido) ---- */
+.grid-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(168,85,247,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168,85,247,0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- GLow ORB (compartido) ---- */
+.glow-orb {
+  position: fixed;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- BOTÓN VOLVER ---- */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--border);
+  color: var(--txt2);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: var(--radius);
+  transition: all var(--transition);
+}
+.btn-back:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+/* ---- LABEL DE SECCIÓN ---- */
+.section-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+/* ---- CURSOR PARPADEANTE ---- */
+.cursor {
+  display: inline-block;
+  width: 3px; height: 1em;
+  background: var(--purple);
+  margin-left: 3px;
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

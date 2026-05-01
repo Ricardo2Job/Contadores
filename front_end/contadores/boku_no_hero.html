@@ -3,108 +3,779 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contador Boku no Hero</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<title>Contador BNH</title>
+<link rel="stylesheet" href="../globals.css">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #07050f;
-    --bg2: #0e0a1a;
-    --purple: #a855f7;
-    --purple-border: rgba(168,85,247,0.25);
-    --purple-glow: rgba(168,85,247,0.08);
-    --txt: #ede8ff;
-    --txt2: #6b5f8a;
-    --mono: 'Space Mono', monospace;
-    --display: 'Syne', sans-serif;
-  }
-  body {
-    background: var(--bg);
-    color: var(--txt);
-    font-family: var(--mono);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(168,85,247,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(168,85,247,0.04) 1px, transparent 1px);
-    background-size: 44px 44px;
-    pointer-events: none;
-  }
-  .orb {
-    position: fixed;
-    width: 500px; height: 500px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-  }
-  .wrap {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-  .label {
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--purple);
-  }
-  .title {
-    font-family: var(--display);
-    font-size: 2.2rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--txt);
-  }
-  .badge {
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 5px 14px;
-    border: 1px solid var(--purple-border);
-    color: var(--txt2);
-    border-radius: 2px;
-    margin-top: 0.5rem;
-  }
-  .back {
-    margin-top: 2rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0.6rem 1.2rem;
-    border: 1px solid var(--purple-border);
-    color: var(--txt2);
-    text-decoration: none;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    border-radius: 2px;
-    transition: all 0.2s;
-  }
-  .back:hover { border-color: var(--purple); color: var(--purple); }
+  body { display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-x:hidden; }
+
+  .topbar { position:fixed; top:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:1rem 2rem; background:rgba(7,5,15,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); z-index:100; }
+  .page-title { font-family:var(--display); font-size:1rem; font-weight:700; }
+  .page-title span { color:var(--purple); }
+  .status { display:inline-flex; align-items:center; gap:7px; font-size:11px; color:var(--txt2); }
+  .status-dot { width:7px; height:7px; border-radius:50%; background:var(--txt3); flex-shrink:0; }
+  .status-dot.connected { background:#22c55e; box-shadow:0 0 6px #22c55e; }
+  .status-dot.loading { background:var(--purple); animation:pulse 1s ease-in-out infinite; }
+  .status-dot.error { background:#ef4444; }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+  .content { position:relative; z-index:1; width:100%; max-width:960px; padding:5.5rem 1.5rem 4rem; }
+
+  .page-header { margin-bottom:2rem; animation:fadeUp 0.4s ease both; }
+  .page-header h1 { font-family:var(--display); font-size:clamp(1.6rem,4vw,2.4rem); font-weight:800; margin-top:0.3rem; }
+
+  /* SAVE BAR */
+  .save-bar { display:flex; align-items:center; justify-content:space-between; padding:0.8rem 1.2rem; background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:1.5rem; animation:fadeUp 0.4s 0.05s ease both; opacity:0; animation-fill-mode:forwards; }
+  .changes-info { font-size:12px; color:var(--txt2); }
+  .changes-info strong { color:var(--purple); }
+  .btn-save { padding:0.5rem 1.4rem; background:var(--purple); border:none; color:#07050f; font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; border-radius:var(--radius); transition:all var(--transition); }
+  .btn-save:hover { background:#c084fc; }
+  .btn-save:disabled { opacity:0.35; cursor:not-allowed; }
+
+  /* PLAYERS GRID */
+  .players-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:1.5rem; animation:fadeUp 0.4s 0.1s ease both; opacity:0; animation-fill-mode:forwards; }
+
+  .player-card { background:var(--bg2); padding:1.3rem; display:flex; flex-direction:column; gap:0.9rem; transition:background var(--transition); }
+  .player-card:hover { background:var(--bg3); }
+  .player-card.leader { background:rgba(168,85,247,0.07); }
+
+  .player-header { display:flex; align-items:center; justify-content:space-between; }
+  .player-name { font-family:var(--display); font-size:1rem; font-weight:700; }
+  .crown { font-size:14px; opacity:0; transition:opacity 0.3s; }
+  .player-card.leader .crown { opacity:1; }
+
+  .player-score { font-family:var(--display); font-size:3rem; font-weight:800; color:var(--purple); line-height:1; transition:transform 0.1s ease; }
+  .player-score.bump { transform:scale(1.15); }
+
+  .player-controls { display:flex; gap:6px; }
+  .btn-c { flex:1; padding:0.55rem; background:transparent; border:1px solid var(--border); color:var(--txt2); font-family:var(--mono); font-size:1rem; font-weight:700; cursor:pointer; border-radius:var(--radius); transition:all var(--transition); }
+  .btn-c.plus:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-glow); }
+  .btn-c.minus:hover { border-color:rgba(239,68,68,0.5); color:#ef4444; background:rgba(239,68,68,0.08); }
+  .btn-c:disabled { opacity:0.25; cursor:not-allowed; }
+
+  /* CHARTS */
+  .charts-wrap { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; animation:fadeUp 0.4s 0.2s ease both; opacity:0; animation-fill-mode:forwards; }
+  @media(max-width:640px){ .charts-wrap { grid-template-columns:1fr; } }
+
+  .chart-box { background:var(--bg2); padding:1.4rem; }
+  .chart-title { font-size:11px; letter-spacing:0.15em; text-transform:uppercase; color:var(--txt2); margin-bottom:1.2rem; }
+
+  /* BAR CHART */
+  .bar-list { display:flex; flex-direction:column; gap:10px; }
+  .bar-row { display:flex; flex-direction:column; gap:4px; }
+  .bar-label-row { display:flex; justify-content:space-between; font-size:12px; }
+  .bar-name { color:var(--txt); }
+  .bar-val { color:var(--purple); font-weight:700; }
+  .bar-track { height:6px; background:rgba(168,85,247,0.12); border-radius:3px; overflow:hidden; }
+  .bar-fill { height:100%; background:var(--purple); border-radius:3px; transition:width 0.6s cubic-bezier(.4,0,.2,1); }
+  .bar-fill.gold  { background:#f59e0b; }
+  .bar-fill.silver{ background:#94a3b8; }
+
+  /* PIE / RATIO */
+  .ratio-list { display:flex; flex-direction:column; gap:10px; }
+  .ratio-row { display:flex; flex-direction:column; gap:4px; }
+  .ratio-label-row { display:flex; justify-content:space-between; font-size:12px; }
+  .ratio-name { color:var(--txt); }
+  .ratio-pct { color:var(--txt2); }
+  .ratio-track { height:6px; background:rgba(168,85,247,0.12); border-radius:3px; overflow:hidden; }
+  .ratio-fill { height:100%; border-radius:3px; transition:width 0.6s cubic-bezier(.4,0,.2,1); }
 </style>
 </head>
-<body>
-<div class="orb"></div>
-<div class="wrap">
-  <p class="label">// contadores</p>
-  <h1 class="title">Contador Boku no Hero</h1>
-  <div class="badge">en construcción</div>
-  <a href="../main/index.html" class="back">← volver al inicio</a>
+<body class="grid-bg">
+<div class="glow-orb"></div>
+
+<div class="topbar">
+  <a href="../main/index.html" class="btn-back">← inicio</a>
+  <span class="page-title">Boku no <span>Hero</span></span>
+  <div class="status">
+    <div class="status-dot loading" id="statusDot"></div>
+    <span id="statusText">conectando...</span>
+  </div>
 </div>
+
+<div class="content">
+  <div class="page-header">
+    <p class="section-label">// party game</p>
+    <h1>Boku no Hero<span class="cursor"></span></h1>
+  </div>
+
+  <!-- SAVE BAR -->
+  <div class="save-bar">
+    <span class="changes-info">Cambios pendientes: <strong id="pendingCount">0</strong></span>
+    <button class="btn-save" id="btnSave" disabled onclick="guardarCambios()">Guardar cambios</button>
+  </div>
+
+  <!-- JUGADORES -->
+  <div class="players-grid" id="playersGrid"></div>
+
+  <!-- GRÁFICOS -->
+  <div class="charts-wrap">
+    <div class="chart-box">
+      <div class="chart-title">// victorias totales</div>
+      <div class="bar-list" id="barChart"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">// % de victorias</div>
+      <div class="ratio-list" id="ratioChart"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { cargarDatos, inicializarSiNoExiste } from '../../back_end/firebase.js';
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const COLECCION = 'contadores';
+  const DOCUMENTO = 'boku_no_hero';
+  const JUGADORES = ['Ricardo','Vengador','SAI','Teniente'];
+  const COLORES   = ['#a855f7','#f59e0b','#22c55e','#38bdf8'];
+
+  const statusDot   = document.getElementById('statusDot');
+  const statusText  = document.getElementById('statusText');
+  const pendingEl   = document.getElementById('pendingCount');
+  const btnSave     = document.getElementById('btnSave');
+
+  let datos    = {};
+  let pendiente = {};
+  let cambios   = 0;
+
+  const valDefault = {};
+  JUGADORES.forEach(j => valDefault[j] = 0);
+
+  // ---- RENDER JUGADORES ----
+  function renderJugadores() {
+    const grid = document.getElementById('playersGrid');
+    grid.innerHTML = '';
+    const maxVal = Math.max(...JUGADORES.map(j => datos[j] ?? 0));
+
+    JUGADORES.forEach((nombre, i) => {
+      const val = datos[nombre] ?? 0;
+      const isLeader = val === maxVal && maxVal > 0;
+      const card = document.createElement('div');
+      card.className = 'player-card' + (isLeader ? ' leader' : '');
+      card.innerHTML = `
+        <div class="player-header">
+          <span class="player-name">${nombre}</span>
+          <span class="crown">👑</span>
+        </div>
+        <div class="player-score" id="score-${nombre}">${val}</div>
+        <div class="player-controls">
+          <button class="btn-c minus" onclick="restar('${nombre}')">−</button>
+          <button class="btn-c plus"  onclick="sumar('${nombre}')">+</button>
+        </div>`;
+      grid.appendChild(card);
+    });
+    renderCharts();
+  }
+
+  // ---- CHARTS ----
+  function renderCharts() {
+    const total = JUGADORES.reduce((s,j) => s + (datos[j]??0), 0);
+    const max   = Math.max(...JUGADORES.map(j => datos[j]??0), 1);
+
+    // Bar chart
+    const barEl = document.getElementById('barChart');
+    barEl.innerHTML = '';
+    const sorted = [...JUGADORES].sort((a,b) => (datos[b]??0)-(datos[a]??0));
+    sorted.forEach((nombre, i) => {
+      const val = datos[nombre] ?? 0;
+      const pct = Math.round((val / max) * 100);
+      const fillClass = i===0 ? 'gold' : i===1 ? 'silver' : '';
+      barEl.innerHTML += `
+        <div class="bar-row">
+          <div class="bar-label-row"><span class="bar-name">${nombre}</span><span class="bar-val">${val}</span></div>
+          <div class="bar-track"><div class="bar-fill ${fillClass}" style="width:${pct}%"></div></div>
+        </div>`;
+    });
+
+    // Ratio chart
+    const ratioEl = document.getElementById('ratioChart');
+    ratioEl.innerHTML = '';
+    if (total === 0) {
+      ratioEl.innerHTML = '<span style="font-size:12px;color:var(--txt3)">sin datos aún</span>';
+      return;
+    }
+    sorted.forEach((nombre, i) => {
+      const val = datos[nombre] ?? 0;
+      const pct = total > 0 ? Math.round((val/total)*100) : 0;
+      const color = COLORES[JUGADORES.indexOf(nombre)] || 'var(--purple)';
+      ratioEl.innerHTML += `
+        <div class="ratio-row">
+          <div class="ratio-label-row"><span class="ratio-name">${nombre}</span><span class="ratio-pct">${pct}%</span></div>
+          <div class="ratio-track"><div class="ratio-fill" style="width:${pct}%;background:${color}"></div></div>
+        </div>`;
+    });
+  }
+
+  // ---- BUMP ANIMATION ----
+  function bump(nombre) {
+    const el = document.getElementById(`score-${nombre}`);
+    if (!el) return;
+    el.classList.add('bump');
+    setTimeout(() => el.classList.remove('bump'), 130);
+  }
+
+  // ---- HANDLERS ----
+  window.sumar = (nombre) => {
+    datos[nombre] = (datos[nombre]??0) + 1;
+    pendiente[nombre] = datos[nombre];
+    cambios++;
+    document.getElementById(`score-${nombre}`).textContent = datos[nombre];
+    bump(nombre);
+    actualizarPendiente();
+    renderJugadores();
+  };
+
+  window.restar = (nombre) => {
+    if ((datos[nombre]??0) <= 0) return;
+    datos[nombre]--;
+    pendiente[nombre] = datos[nombre];
+    cambios++;
+    document.getElementById(`score-${nombre}`).textContent = datos[nombre];
+    bump(nombre);
+    actualizarPendiente();
+    renderJugadores();
+  };
+
+  function actualizarPendiente() {
+    pendingEl.textContent = cambios;
+    btnSave.disabled = cambios === 0;
+  }
+
+  // ---- GUARDAR ----
+  window.guardarCambios = async () => {
+    btnSave.disabled = true;
+    btnSave.textContent = 'Guardando...';
+    try {
+      const { db } = await import('../../back_end/firebase.js');
+      const ref = doc(db, COLECCION, DOCUMENTO);
+      await setDoc(ref, datos);
+      cambios = 0;
+      pendiente = {};
+      actualizarPendiente();
+      btnSave.textContent = '✓ Guardado';
+      setTimeout(() => { btnSave.textContent = 'Guardar cambios'; }, 2000);
+    } catch(e) {
+      console.error(e);
+      btnSave.textContent = 'Error — reintentar';
+      btnSave.disabled = false;
+    }
+  };
+
+  // ---- INIT ----
+  async function init() {
+    try {
+      await inicializarSiNoExiste(COLECCION, DOCUMENTO, valDefault);
+      const cargado = await cargarDatos(COLECCION, DOCUMENTO);
+      datos = { ...valDefault, ...(cargado ?? {}) };
+      renderJugadores();
+      statusDot.className    = 'status-dot connected';
+      statusText.textContent = 'conectado';
+    } catch(e) {
+      console.error(e);
+      statusDot.className    = 'status-dot error';
+      statusText.textContent = 'error de conexión';
+      datos = { ...valDefault };
+      renderJugadores();
+    }
+  }
+
+  init();
+</script>
+
+<!-- ============================================================
+     RULETA BNH
+     ============================================================ -->
+<style>
+  /* RULETA WRAPPER */
+  .ruleta-section {
+    position:relative; z-index:1;
+    width:100%; max-width:960px;
+    padding:0 1.5rem 5rem;
+    margin:0 auto;
+  }
+
+  .ruleta-header { margin-bottom:2rem; }
+  .ruleta-header h2 { font-family:var(--display); font-size:clamp(1.4rem,3vw,2rem); font-weight:800; margin-top:0.3rem; }
+
+  /* LAYOUT */
+  .ruleta-layout { display:grid; grid-template-columns:1fr auto; gap:2rem; align-items:start; }
+  @media(max-width:700px){ .ruleta-layout { grid-template-columns:1fr; } }
+
+  /* CANVAS WRAP */
+  .canvas-wrap {
+    position:relative;
+    display:flex; flex-direction:column; align-items:center; gap:1.5rem;
+  }
+
+  /* GLOW RING */
+  .wheel-glow {
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-58%);
+    width:360px; height:360px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(168,85,247,0.25) 0%, transparent 70%);
+    pointer-events:none;
+    transition:opacity 0.3s;
+    z-index:0;
+  }
+  .wheel-glow.spinning { animation:glowPulse 0.4s ease-in-out infinite alternate; }
+  @keyframes glowPulse { from{opacity:0.5} to{opacity:1} }
+
+  #wheelCanvas {
+    position:relative; z-index:1;
+    border-radius:50%;
+    filter:drop-shadow(0 0 18px rgba(168,85,247,0.5));
+    cursor:pointer;
+    transition:filter 0.3s;
+  }
+  #wheelCanvas.spinning { filter:drop-shadow(0 0 32px rgba(168,85,247,0.9)) drop-shadow(0 0 60px rgba(168,85,247,0.4)); }
+
+  /* POINTER */
+  .wheel-pointer {
+    position:absolute;
+    top:-16px; left:50%;
+    transform:translateX(-50%);
+    z-index:10;
+    width:0; height:0;
+    border-left:12px solid transparent;
+    border-right:12px solid transparent;
+    border-top:28px solid #a855f7;
+    filter:drop-shadow(0 0 8px #a855f7);
+  }
+
+  /* BTN GIRAR */
+  .btn-girar {
+    padding:0.75rem 2.5rem;
+    background:var(--purple);
+    border:none;
+    color:#07050f;
+    font-family:var(--display);
+    font-size:1rem;
+    font-weight:800;
+    letter-spacing:0.05em;
+    cursor:pointer;
+    border-radius:var(--radius);
+    transition:all 0.2s;
+    box-shadow:0 0 20px rgba(168,85,247,0.4);
+  }
+  .btn-girar:hover { background:#c084fc; box-shadow:0 0 30px rgba(168,85,247,0.6); }
+  .btn-girar:disabled { opacity:0.4; cursor:not-allowed; box-shadow:none; }
+
+  /* PANEL DERECHO — lista + agregar */
+  .ruleta-panel {
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    overflow:hidden;
+    min-width:220px;
+    max-width:260px;
+  }
+  @media(max-width:700px){ .ruleta-panel { max-width:100%; } }
+
+  .panel-header { padding:0.8rem 1rem; border-bottom:1px solid var(--border); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; color:var(--txt2); display:flex; justify-content:space-between; align-items:center; }
+  .panel-count { color:var(--purple); font-weight:700; }
+
+  .char-list { max-height:320px; overflow-y:auto; }
+  .char-list::-webkit-scrollbar { width:4px; }
+  .char-list::-webkit-scrollbar-track { background:transparent; }
+  .char-list::-webkit-scrollbar-thumb { background:var(--purple-border); border-radius:2px; }
+
+  .char-item { display:flex; align-items:center; justify-content:space-between; padding:0.45rem 1rem; font-size:12px; color:var(--txt2); border-bottom:1px solid rgba(168,85,247,0.05); transition:background 0.15s; }
+  .char-item:hover { background:var(--bg3); }
+  .char-item .char-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; margin-right:8px; }
+  .char-item .char-name { flex:1; }
+  .char-item .btn-remove { background:none; border:none; color:var(--txt3); cursor:pointer; font-size:14px; padding:0 2px; transition:color 0.15s; line-height:1; }
+  .char-item .btn-remove:hover { color:#ef4444; }
+
+  /* ADD FORM */
+  .add-form { padding:0.8rem; border-top:1px solid var(--border); display:flex; gap:6px; }
+  .add-input { flex:1; padding:0.45rem 0.7rem; background:var(--bg); border:1px solid var(--border); color:var(--txt); font-family:var(--mono); font-size:12px; border-radius:var(--radius); outline:none; transition:border-color 0.2s; }
+  .add-input:focus { border-color:var(--purple); }
+  .btn-add { padding:0.45rem 0.7rem; background:transparent; border:1px solid var(--purple-border); color:var(--txt2); font-family:var(--mono); font-size:12px; cursor:pointer; border-radius:var(--radius); transition:all 0.2s; white-space:nowrap; }
+  .btn-add:hover { border-color:var(--purple); color:var(--purple); }
+
+  /* POPUP RESULTADO */
+  .result-overlay {
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(7,5,15,0.85);
+    backdrop-filter:blur(6px);
+    z-index:1000;
+    align-items:center;
+    justify-content:center;
+  }
+  .result-overlay.show { display:flex; }
+
+  .result-box {
+    background:var(--bg2);
+    border:1px solid var(--purple);
+    border-radius:8px;
+    padding:2.5rem 3rem;
+    text-align:center;
+    max-width:420px;
+    width:90%;
+    box-shadow:0 0 60px rgba(168,85,247,0.4), 0 0 120px rgba(168,85,247,0.15);
+    animation:popIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+    position:relative;
+    overflow:hidden;
+  }
+
+  @keyframes popIn {
+    from { opacity:0; transform:scale(0.7) translateY(20px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+  }
+
+  .result-label { font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--txt2); margin-bottom:1rem; }
+  .result-name {
+    font-family:var(--display);
+    font-size:clamp(1.6rem,5vw,2.4rem);
+    font-weight:800;
+    color:var(--purple);
+    line-height:1.1;
+    margin-bottom:1.5rem;
+    text-shadow:0 0 30px rgba(168,85,247,0.6);
+  }
+  .btn-close-result {
+    padding:0.6rem 2rem;
+    background:transparent;
+    border:1px solid var(--purple-border);
+    color:var(--txt2);
+    font-family:var(--mono);
+    font-size:12px;
+    cursor:pointer;
+    border-radius:var(--radius);
+    transition:all 0.2s;
+  }
+  .btn-close-result:hover { border-color:var(--purple); color:var(--purple); }
+
+  /* CONFETI */
+  .confeti-particle {
+    position:fixed;
+    width:8px; height:8px;
+    border-radius:2px;
+    pointer-events:none;
+    z-index:999;
+    animation:confetiFall linear forwards;
+  }
+  @keyframes confetiFall {
+    0%   { transform:translateY(-20px) rotate(0deg); opacity:1; }
+    100% { transform:translateY(100vh) rotate(720deg); opacity:0; }
+  }
+</style>
+
+<!-- RULETA HTML -->
+<div class="ruleta-section">
+  <div class="ruleta-header">
+    <p class="section-label">// ruleta de personajes</p>
+    <h2>Ruleta BNH<span class="cursor"></span></h2>
+  </div>
+
+  <div class="ruleta-layout">
+    <!-- CANVAS -->
+    <div class="canvas-wrap">
+      <div style="position:relative;">
+        <div class="wheel-glow" id="wheelGlow"></div>
+        <div class="wheel-pointer"></div>
+        <canvas id="wheelCanvas" width="320" height="320"></canvas>
+      </div>
+      <button class="btn-girar" id="btnGirar" onclick="girarRuleta()">⚡ GIRAR</button>
+    </div>
+
+    <!-- PANEL PERSONAJES -->
+    <div class="ruleta-panel">
+      <div class="panel-header">
+        Personajes
+        <span class="panel-count" id="charCount">0</span>
+      </div>
+      <div class="char-list" id="charList"></div>
+      <div class="add-form">
+        <input class="add-input" id="addInput" type="text" placeholder="Nombre..." maxlength="30"
+               onkeydown="if(event.key==='Enter') agregarPersonaje()">
+        <button class="btn-add" onclick="agregarPersonaje()">+ Agregar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP RESULTADO -->
+<div class="result-overlay" id="resultOverlay" onclick="cerrarResultado()">
+  <div class="result-box" onclick="event.stopPropagation()">
+    <div class="result-label">✨ le tocó jugar con</div>
+    <div class="result-name" id="resultName">—</div>
+    <button class="btn-close-result" onclick="cerrarResultado()">Cerrar</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// RULETA — lógica completa
+// ============================================================
+
+const PERSONAJES_BASE = [
+  "Izuku Midoriya","Izuku Midoriya OFA","Katsuki Bakugo","Ochaco Uraraka",
+  "Tenya Iida","Shoto Todoroki","Tsuyu Asui","Eijiro Kirishima",
+  "Momo Yaoyorozu","Fumikage Tokoyami","Neito Monoma","Itsuka Kendo",
+  "Mirio Togata","Ibara Shiozaki","Tamaki Amajiki","Nejire Hado",
+  "Shota Aizawa","Hitoshi Shinso","All Might","Armored All Might",
+  "Present Mic","Cementoss","Endeavor","Hawks","Denki Kaminari",
+  "Mt. Lady","Twice","Tomura Shigaraki","All For One",
+  "All For One (Youth age)","Dabi","Himiko Toga","Star and Stripe",
+  "Mr. Compress","Kurogiri","Lady Nagant","Overhaul"
+];
+
+// Paleta neón — cicla entre tonos púrpura/morado/azul/rosa
+const PALETTE = [
+  '#6d28d9','#7c3aed','#8b5cf6','#a855f7',
+  '#c084fc','#9333ea','#581c87','#4c1d95',
+  '#3b0764','#7e22ce','#a21caf','#86198f',
+  '#701a75','#5b21b6','#4338ca','#3730a3',
+];
+
+let personajes = [...PERSONAJES_BASE];
+let anguloActual = 0;
+let girando = false;
+
+const canvas  = document.getElementById('wheelCanvas');
+const ctx     = canvas.getContext('2d');
+const glow    = document.getElementById('wheelGlow');
+const btnGirar = document.getElementById('btnGirar');
+
+// Audio context para sonido de tick
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function tick(freq = 600) {
+  try {
+    const ac  = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.08, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.04);
+    osc.start(ac.currentTime);
+    osc.stop(ac.currentTime + 0.04);
+  } catch(e) {}
+}
+
+function tickFinal() {
+  try {
+    const ac = getAudio();
+    [523, 659, 784, 1047].forEach((f, i) => {
+      const osc  = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.frequency.value = f;
+      osc.type = 'triangle';
+      const t = ac.currentTime + i * 0.1;
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      osc.start(t); osc.stop(t + 0.18);
+    });
+  } catch(e) {}
+}
+
+// ---- DIBUJAR RULETA ----
+function dibujarRuleta(angulo) {
+  const n   = personajes.length;
+  if (n === 0) { ctx.clearRect(0,0,320,320); return; }
+  const cx  = 160, cy = 160, r = 150;
+  const arc = (2 * Math.PI) / n;
+
+  ctx.clearRect(0, 0, 320, 320);
+
+  personajes.forEach((nombre, i) => {
+    const inicio = angulo + i * arc;
+    const fin    = inicio + arc;
+    const color  = PALETTE[i % PALETTE.length];
+
+    // Sector
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, inicio, fin);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    // Borde sutil
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth   = 1;
+    ctx.stroke();
+
+    // Texto
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(inicio + arc / 2);
+    ctx.textAlign    = 'right';
+    ctx.fillStyle    = 'rgba(255,255,255,0.92)';
+    const fontSize   = n > 20 ? 9 : n > 12 ? 10 : 11;
+    ctx.font         = `${fontSize}px 'Space Mono', monospace`;
+    const maxLen     = 16;
+    const label      = nombre.length > maxLen ? nombre.slice(0, maxLen - 1) + '…' : nombre;
+    ctx.fillText(label, r - 8, 4);
+    ctx.restore();
+  });
+
+  // Centro círculo
+  ctx.beginPath();
+  ctx.arc(cx, cy, 18, 0, 2 * Math.PI);
+  ctx.fillStyle = '#07050f';
+  ctx.fill();
+  ctx.strokeStyle = '#a855f7';
+  ctx.lineWidth   = 2;
+  ctx.stroke();
+
+  // Borde exterior neón
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#a855f7';
+  ctx.lineWidth   = 3;
+  ctx.stroke();
+}
+
+// ---- GIRAR ----
+function girarRuleta() {
+  if (girando || personajes.length === 0) return;
+  girando = true;
+  btnGirar.disabled = true;
+  glow.classList.add('spinning');
+  canvas.classList.add('spinning');
+
+  const vueltasExtra  = 5 + Math.random() * 5;       // 5-10 vueltas completas
+  const anguloExtra   = vueltasExtra * 2 * Math.PI + Math.random() * 2 * Math.PI;
+  const duracion      = 4000 + Math.random() * 2000;  // 4-6 seg
+  const inicio        = performance.now();
+  const anguloInicio  = anguloActual;
+
+  const n   = personajes.length;
+  const arc = (2 * Math.PI) / n;
+  let lastSector = -1;
+
+  function easeOut(t) {
+    return 1 - Math.pow(1 - t, 4);
+  }
+
+  function frame(ahora) {
+    const elapsed  = ahora - inicio;
+    const progress = Math.min(elapsed / duracion, 1);
+    const delta    = anguloExtra * easeOut(progress);
+
+    anguloActual = anguloInicio + delta;
+    dibujarRuleta(anguloActual);
+
+    // Tick sonido al pasar sector
+    const normalizado = (((-anguloActual) % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+    const sector = Math.floor(normalizado / arc) % n;
+    if (sector !== lastSector) {
+      const speed = progress < 0.7 ? 800 : 500;
+      tick(speed);
+      lastSector = sector;
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      // Terminó
+      girando = false;
+      btnGirar.disabled = false;
+      glow.classList.remove('spinning');
+      canvas.classList.remove('spinning');
+
+      // Calcular ganador — el puntero está arriba (ángulo -π/2 = top)
+      const ang = (((-anguloActual - Math.PI/2) % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+      const idx = Math.floor(ang / arc) % n;
+      const ganador = personajes[idx];
+
+      tickFinal();
+      setTimeout(() => {
+        lanzarConfeti();
+        mostrarResultado(ganador);
+      }, 300);
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
+// ---- CONFETI ----
+function lanzarConfeti() {
+  const colors = ['#a855f7','#c084fc','#e879f9','#f0abfc','#7c3aed','#fbbf24','#38bdf8'];
+  for (let i = 0; i < 120; i++) {
+    const p = document.createElement('div');
+    p.className = 'confeti-particle';
+    p.style.cssText = `
+      left:${Math.random()*100}vw;
+      top:0;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      width:${6+Math.random()*8}px;
+      height:${6+Math.random()*8}px;
+      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-duration:${2+Math.random()*2}s;
+      animation-delay:${Math.random()*0.5}s;
+    `;
+    document.body.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+// ---- POPUP ----
+function mostrarResultado(nombre) {
+  document.getElementById('resultName').textContent = nombre;
+  document.getElementById('resultOverlay').classList.add('show');
+}
+
+function cerrarResultado() {
+  document.getElementById('resultOverlay').classList.remove('show');
+}
+window.cerrarResultado = cerrarResultado;
+
+// ---- RENDER LISTA ----
+function renderLista() {
+  const list = document.getElementById('charList');
+  const count = document.getElementById('charCount');
+  count.textContent = personajes.length;
+  list.innerHTML = '';
+  personajes.forEach((nombre, i) => {
+    const item = document.createElement('div');
+    item.className = 'char-item';
+    const color = PALETTE[i % PALETTE.length];
+    item.innerHTML = `
+      <span class="char-dot" style="background:${color}"></span>
+      <span class="char-name">${nombre}</span>
+      <button class="btn-remove" onclick="quitarPersonaje(${i})" title="Quitar">×</button>`;
+    list.appendChild(item);
+  });
+  dibujarRuleta(anguloActual);
+}
+
+// ---- AGREGAR / QUITAR ----
+function agregarPersonaje() {
+  const input = document.getElementById('addInput');
+  const nombre = input.value.trim();
+  if (!nombre) return;
+  personajes.push(nombre);
+  input.value = '';
+  renderLista();
+}
+window.agregarPersonaje = agregarPersonaje;
+
+function quitarPersonaje(idx) {
+  if (personajes.length <= 2) return;
+  personajes.splice(idx, 1);
+  renderLista();
+}
+window.quitarPersonaje = quitarPersonaje;
+
+window.girarRuleta = girarRuleta;
+
+// ---- INIT RULETA ----
+renderLista();
+</script>
 </body>
 </html>
