@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzA3MDUwZiIvPjxlbGxpcHNlIGN4PSI3IiBjeT0iMTMiIHJ4PSIzIiByeT0iMi41IiBmaWxsPSIjYTg1NWY3Ii8+PGVsbGlwc2UgY3g9IjI1IiBjeT0iMTMiIHJ4PSIzIiByeT0iMi41IiBmaWxsPSIjYTg1NWY3Ii8+PGVsbGlwc2UgY3g9IjE2IiBjeT0iMTMiIHJ4PSI5IiByeT0iOCIgZmlsbD0iI2E4NTVmNyIvPjxlbGxpcHNlIGN4PSIxNiIgY3k9IjE2IiByeD0iNSIgcnk9IjMuNSIgZmlsbD0iIzdjM2FlZCIvPjxjaXJjbGUgY3g9IjEzIiBjeT0iMTIiIHI9IjEuMiIgZmlsbD0iIzA3MDUwZiIvPjxjaXJjbGUgY3g9IjE5IiBjeT0iMTIiIHI9IjEuMiIgZmlsbD0iIzA3MDUwZiIvPjxlbGxpcHNlIGN4PSIxNiIgY3k9IjI1IiByeD0iNiIgcnk9IjUiIGZpbGw9IiNhODU1ZjciLz48cGF0aCBkPSJNMTAgMjIgUTYgMjAgNyAxNiBROCAxNCAxMCAxNSIgc3Ryb2tlPSIjYTg1NWY3IiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGNpcmNsZSBjeD0iMTAiIGN5PSIxNSIgcj0iMiIgZmlsbD0iIzdjM2FlZCIvPjxwYXRoIGQ9Ik0yMiAyMiBRMjYgMjEgMjUgMTgiIHN0cm9rZT0iI2E4NTVmNyIgc3Ryb2tlLXdpZHRoPSIyLjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMS41IDEwIFExMyA5IDE0LjUgMTAiIHN0cm9rZT0iIzA3MDUwZiIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTcuNSAxMCBRMTkgOSAyMC41IDEwIiBzdHJva2U9IiMwNzA1MGYiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendientes</title>
+<link rel="stylesheet" href="../globals.css">
+<style>
+  body { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; }
+  .container { position:relative; z-index:1; width:100%; max-width:560px; padding:2rem; display:flex; flex-direction:column; align-items:center; gap:0.5rem; }
+  .header { text-align:center; margin-bottom:2.5rem; }
+  .name { font-family:var(--display); font-size:2.8rem; font-weight:800; letter-spacing:-0.02em; line-height:1; }
+  .name span { color:var(--purple); }
+  .subtitle { margin-top:0.5rem; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--txt2); }
+  .nav-link { width:100%; display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1.2rem; background:var(--bg2); border:1px solid var(--purple-border); color:var(--txt2); text-decoration:none; font-family:var(--mono); font-size:13px; letter-spacing:0.08em; border-radius:var(--radius); transition:all 0.2s; animation:fadeUp 0.5s ease both; opacity:0; animation-fill-mode:forwards; }
+  .nav-link:hover { border-color:var(--purple); color:var(--purple); background:var(--bg3); }
+  .nav-left { display:flex; align-items:center; gap:10px; }
+  .nav-icon { width:22px; height:22px; border:1px solid var(--purple-border); display:flex; align-items:center; justify-content:center; font-size:12px; border-radius:2px; flex-shrink:0; }
+  .nav-meta { display:flex; align-items:center; gap:8px; }
+  .nav-count { font-size:10px; color:var(--txt3); }
+  .nav-arrow { font-size:12px; transition:transform 0.2s; }
+  .nav-link:hover .nav-arrow { transform:translateX(3px); color:var(--purple); }
+  .back-wrap { margin-top:1.5rem; }
+</style>
+</head>
+<body class="grid-bg">
+<div class="glow-orb"></div>
+<div class="container">
+  <div class="header">
+    <h1 class="name">Por <span>ver</span><span class="cursor"></span></h1>
+    <p class="subtitle">// películas · series · juegos</p>
+  </div>
+  <a href="peliculas.html" class="nav-link" style="animation-delay:0.1s">
+    <div class="nav-left"><div class="nav-icon">🎬</div>Películas</div>
+    <div class="nav-meta"><span class="nav-count" id="cnt-pel">—</span><span class="nav-arrow">→</span></div>
+  </a>
+  <a href="series.html" class="nav-link" style="animation-delay:0.15s">
+    <div class="nav-left"><div class="nav-icon">📺</div>Series</div>
+    <div class="nav-meta"><span class="nav-count" id="cnt-ser">—</span><span class="nav-arrow">→</span></div>
+  </a>
+  <a href="juegos.html" class="nav-link" style="animation-delay:0.2s">
+    <div class="nav-left"><div class="nav-icon">🎮</div>Juegos</div>
+    <div class="nav-meta"><span class="nav-count" id="cnt-jue">—</span><span class="nav-arrow">→</span></div>
+  </a>
+  <div class="back-wrap"><a href="../main/index.html" class="btn-back">← inicio</a></div>
+</div>
+<script type="module">
+  import { cargarDatos } from '../../back_end/firebase.js';
+  try {
+    const d = await cargarDatos('pendientes','counts');
+    if (d) {
+      document.getElementById('cnt-pel').textContent = (d.peliculas||0) + ' items';
+      document.getElementById('cnt-ser').textContent = (d.series||0)   + ' items';
+      document.getElementById('cnt-jue').textContent = (d.juegos||0)   + ' items';
+    }
+  } catch(e) {}
+</script>
+</body>
+</html>

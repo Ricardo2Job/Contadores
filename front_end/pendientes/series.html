@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzA3MDUwZiIvPjxlbGxpcHNlIGN4PSI3IiBjeT0iMTMiIHJ4PSIzIiByeT0iMi41IiBmaWxsPSIjYTg1NWY3Ii8+PGVsbGlwc2UgY3g9IjI1IiBjeT0iMTMiIHJ4PSIzIiByeT0iMi41IiBmaWxsPSIjYTg1NWY3Ii8+PGVsbGlwc2UgY3g9IjE2IiBjeT0iMTMiIHJ4PSI5IiByeT0iOCIgZmlsbD0iI2E4NTVmNyIvPjxlbGxpcHNlIGN4PSIxNiIgY3k9IjE2IiByeD0iNSIgcnk9IjMuNSIgZmlsbD0iIzdjM2FlZCIvPjxjaXJjbGUgY3g9IjEzIiBjeT0iMTIiIHI9IjEuMiIgZmlsbD0iIzA3MDUwZiIvPjxjaXJjbGUgY3g9IjE5IiBjeT0iMTIiIHI9IjEuMiIgZmlsbD0iIzA3MDUwZiIvPjxlbGxpcHNlIGN4PSIxNiIgY3k9IjI1IiByeD0iNiIgcnk9IjUiIGZpbGw9IiNhODU1ZjciLz48cGF0aCBkPSJNMTAgMjIgUTYgMjAgNyAxNiBROCAxNCAxMCAxNSIgc3Ryb2tlPSIjYTg1NWY3IiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGNpcmNsZSBjeD0iMTAiIGN5PSIxNSIgcj0iMiIgZmlsbD0iIzdjM2FlZCIvPjxwYXRoIGQ9Ik0yMiAyMiBRMjYgMjEgMjUgMTgiIHN0cm9rZT0iI2E4NTVmNyIgc3Ryb2tlLXdpZHRoPSIyLjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMS41IDEwIFExMyA5IDE0LjUgMTAiIHN0cm9rZT0iIzA3MDUwZiIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTcuNSAxMCBRMTkgOSAyMC41IDEwIiBzdHJva2U9IiMwNzA1MGYiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Series</title>
+<link rel="stylesheet" href="../globals.css">
+<style>
+  body{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding-bottom:5rem}
+  .topbar{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;background:rgba(7,5,15,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:100}
+  .page-title{font-family:var(--display);font-size:1rem;font-weight:700}
+  .page-title span{color:var(--purple)}
+  .status{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2)}
+  .status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--txt3)}
+  .status-dot.connected{background:#22c55e;box-shadow:0 0 6px #22c55e}
+  .status-dot.loading{background:var(--purple);animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+  .content{position:relative;z-index:1;width:100%;max-width:860px;padding:5.5rem 1.5rem 2rem}
+  .page-header{margin-bottom:1.5rem;animation:fadeUp 0.4s ease both;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+  .page-header h1{font-family:var(--display);font-size:clamp(1.8rem,4vw,2.4rem);font-weight:800;margin-top:0.3rem}
+  .btn-add-item{padding:0.55rem 1.2rem;background:var(--purple);border:none;color:#07050f;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:var(--radius);transition:all 0.2s}
+  .btn-add-item:hover{background:#c084fc}
+  .filters{display:flex;gap:6px;margin-bottom:1.2rem;flex-wrap:wrap;animation:fadeUp 0.4s 0.05s ease both;opacity:0;animation-fill-mode:forwards}
+  .filter-btn{padding:0.35rem 0.9rem;background:transparent;border:1px solid var(--border);color:var(--txt2);font-family:var(--mono);font-size:11px;letter-spacing:0.08em;cursor:pointer;border-radius:var(--radius);transition:all 0.2s}
+  .filter-btn.active{border-color:var(--purple);color:var(--purple);background:var(--purple-glow)}
+  .items-grid{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;animation:fadeUp 0.4s 0.1s ease both;opacity:0;animation-fill-mode:forwards}
+  .item-card{background:var(--bg2);display:grid;grid-template-columns:100px 1fr;transition:background 0.2s}
+  .item-card:hover{background:var(--bg3)}
+  .item-card.visto{opacity:0.6}
+  .item-card.visto .item-title{text-decoration:line-through;color:var(--txt2)}
+  .item-poster{width:100px;height:140px;background:var(--bg3);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer}
+  .item-poster img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+  .item-poster .upload-hint{font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--txt3);text-align:center;padding:0 8px;z-index:1;pointer-events:none}
+  .item-poster .upload-icon{font-size:18px;z-index:1;pointer-events:none}
+  .item-poster.has-img .upload-hint,.item-poster.has-img .upload-icon{display:none}
+  .item-poster input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .item-info{padding:0.9rem 1rem;display:flex;flex-direction:column;gap:0.5rem;min-width:0}
+  .item-title{font-family:var(--display);font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rating-row{display:flex;align-items:center;gap:4px}
+  .rating-symbols{display:flex;align-items:center;gap:1px;user-select:none}
+  .r-sym{font-size:14px;opacity:0.25;cursor:pointer;transition:opacity 0.15s,transform 0.1s;line-height:1}
+  .r-sym.banana{font-size:11px}
+  .r-sym.active{opacity:1}
+  .r-sym:hover{opacity:0.8;transform:scale(1.15)}
+  .rating-num{font-family:var(--display);font-size:0.85rem;font-weight:700;color:var(--purple);margin-left:6px;min-width:16px}
+  .item-synopsis{font-size:11px;color:var(--txt2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .item-actions{display:flex;align-items:center;gap:6px;margin-top:auto;padding-top:0.3rem}
+  .btn-visto{padding:0.3rem 0.9rem;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:var(--radius);transition:all 0.2s;border:1px solid rgba(34,197,94,0.3);background:transparent;color:var(--txt3)}
+  .btn-visto.yes{background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.5);color:#22c55e}
+  .btn-visto:hover{border-color:#22c55e;color:#22c55e}
+  .btn-del{padding:0.3rem 0.5rem;background:transparent;border:1px solid transparent;color:var(--txt3);font-size:12px;cursor:pointer;border-radius:var(--radius);transition:all 0.2s;margin-left:auto}
+  .btn-del:hover{border-color:rgba(239,68,68,0.4);color:#ef4444}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(7,5,15,0.88);backdrop-filter:blur(8px);z-index:200;align-items:center;justify-content:center;padding:1rem}
+  .modal-overlay.show{display:flex}
+  .modal-box{background:var(--bg2);border:1px solid var(--purple);border-radius:6px;padding:1.8rem;width:100%;max-width:440px;display:flex;flex-direction:column;gap:1rem;animation:popIn 0.3s cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+  .modal-title{font-family:var(--display);font-size:1.2rem;font-weight:800}
+  .modal-title span{color:var(--purple)}
+  .modal-field{display:flex;flex-direction:column;gap:4px}
+  .modal-label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--txt2)}
+  .modal-input{padding:0.55rem 0.8rem;background:var(--bg);border:1px solid var(--border);color:var(--txt);font-family:var(--mono);font-size:13px;border-radius:var(--radius);outline:none;transition:border-color 0.2s;width:100%}
+  .modal-input:focus{border-color:var(--purple)}
+  textarea.modal-input{resize:vertical;min-height:70px}
+  .modal-btns{display:flex;gap:8px;justify-content:flex-end}
+  .btn-cancel{padding:0.5rem 1.2rem;background:transparent;border:1px solid var(--border);color:var(--txt2);font-family:var(--mono);font-size:12px;cursor:pointer;border-radius:var(--radius);transition:all 0.2s}
+  .btn-cancel:hover{border-color:var(--txt2);color:var(--txt)}
+  .btn-confirm{padding:0.5rem 1.4rem;background:var(--purple);border:none;color:#07050f;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;border-radius:var(--radius);transition:all 0.2s}
+  .btn-confirm:hover{background:#c084fc}
+  .empty-state{padding:3rem;text-align:center;font-size:12px;color:var(--txt3)}
+  .save-bar{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:0.8rem 2rem;background:rgba(7,5,15,0.95);backdrop-filter:blur(12px);border-top:1px solid var(--border);z-index:100}
+  .save-info{font-size:12px;color:var(--txt2)}
+  .save-info strong{color:var(--purple)}
+  .btn-save{padding:0.5rem 1.6rem;background:var(--purple);border:none;color:#07050f;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:var(--radius);transition:all 0.2s}
+  .btn-save:hover{background:#c084fc}
+  .btn-save:disabled{opacity:0.35;cursor:not-allowed}
+</style>
+</head>
+<body class="grid-bg">
+<div class="glow-orb"></div>
+<div class="topbar">
+  <a href="index.html" class="btn-back">← pendientes</a>
+  <span class="page-title">📺 <span>Series</span></span>
+  <div class="status"><div class="status-dot loading" id="statusDot"></div><span id="statusText">conectando...</span></div>
+</div>
+<div class="content">
+  <div class="page-header">
+    <div><p class="section-label">// por ver</p><h1>Series<span class="cursor"></span></h1></div>
+    <button class="btn-add-item" onclick="abrirModal()">+ Agregar</button>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('todos',this)">Todos</button>
+    <button class="filter-btn" onclick="setFilter('pendiente',this)">Pendientes</button>
+    <button class="filter-btn" onclick="setFilter('visto',this)">Vistos</button>
+  </div>
+  <div class="items-grid" id="itemsGrid"></div>
+</div>
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-title">Agregar <span>Series</span></div>
+    <div class="modal-field"><div class="modal-label">Título</div><input class="modal-input" id="mTitle" type="text" placeholder="Nombre..."></div>
+    <div class="modal-field"><div class="modal-label">Sinopsis (opcional)</div><textarea class="modal-input" id="mSynopsis" placeholder="Descripción breve..."></textarea></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="agregarItem()">Agregar</button>
+    </div>
+  </div>
+</div>
+<div class="save-bar">
+  <span class="save-info">Cambios pendientes: <strong id="pendingCount">0</strong></span>
+  <button class="btn-save" id="btnSave" disabled onclick="guardar()">Guardar</button>
+</div>
+<script type="module">
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const COLECCION='series';
+const ITEMS_DEFAULT=[{"title":"Ejemplo serie","synopsis":"Agrega tus series aquí.","rating":0,"visto":false,"img":""}];
+function getSymbol(pos){if(pos===0)return{s:'🙈',cls:'monkey'};if(pos===4)return{s:'🙉',cls:'monkey'};if(pos===8)return{s:'🙊',cls:'monkey'};return{s:'🍌',cls:'banana'};}
+let db,items=[],filterMode='todos',pendingCount=0;
+async function init(){
+  try{const mod=await import('../../back_end/firebase.js');db=mod.db;const snap=await getDoc(doc(db,'pendientes',COLECCION));if(snap.exists()&&snap.data().items){items=snap.data().items;}else{items=ITEMS_DEFAULT.map((it,i)=>({id:Date.now()+i,...it}));}setStatus('connected','conectado');}
+  catch(e){console.error(e);items=ITEMS_DEFAULT.map((it,i)=>({id:Date.now()+i,...it}));setStatus('error','sin conexión');}
+  render();
+}
+function setStatus(cls,txt){document.getElementById('statusDot').className='status-dot '+cls;document.getElementById('statusText').textContent=txt;}
+function render(){
+  const grid=document.getElementById('itemsGrid');
+  const filtered=items.filter(it=>filterMode==='pendiente'?!it.visto:filterMode==='visto'?it.visto:true);
+  if(!filtered.length){grid.innerHTML='<div class="empty-state">No hay nada aquí aún 🐒</div>';return;}
+  grid.innerHTML=filtered.map(it=>renderCard(it)).join('');
+}
+function renderCard(it){
+  const rating=it.rating||0;
+  let symbols='';
+  for(let i=0;i<9;i++){const{s,cls}=getSymbol(i);const active=i<rating?'active':'';symbols+=`<span class="r-sym ${cls} ${active}" onclick="setRating(${it.id},${i+1})">${s}</span>`;}
+  const posterContent=it.img?`<img src="${it.img}" alt="${it.title}">`:`<span class="upload-icon">🖼️</span><span class="upload-hint">subir imagen</span>`;
+  return `<div class="item-card ${it.visto?'visto':''}" id="card-${it.id}">
+    <div class="item-poster ${it.img?'has-img':''}">${posterContent}${!it.img?`<input type="file" accept="image/*" onchange="subirImagen(${it.id},this)">`:''}</div>
+    <div class="item-info">
+      <div class="item-title">${it.title}</div>
+      <div class="rating-row"><div class="rating-symbols">${symbols}</div><span class="rating-num">${rating>0?rating+'/9':'—'}</span></div>
+      ${it.synopsis?`<div class="item-synopsis">${it.synopsis}</div>`:''}
+      <div class="item-actions">
+        <button class="btn-visto ${it.visto?'yes':''}" onclick="toggleVisto(${it.id})">${it.visto?'✓ Visto':'Marcar visto'}</button>
+        <button class="btn-del" onclick="eliminar(${it.id})">✕</button>
+      </div>
+    </div>
+  </div>`;
+}
+window.setRating=(id,val)=>{const it=items.find(i=>i.id===id);if(!it)return;it.rating=it.rating===val?0:val;addPending();render();};
+window.toggleVisto=(id)=>{const it=items.find(i=>i.id===id);if(!it)return;it.visto=!it.visto;addPending();render();};
+window.eliminar=(id)=>{if(!confirm('¿Eliminar?'))return;items=items.filter(i=>i.id!==id);addPending();render();};
+window.subirImagen=(id,input)=>{const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{const it=items.find(i=>i.id===id);if(it){it.img=e.target.result;addPending();render();}};reader.readAsDataURL(file);};
+window.setFilter=(mode,btn)=>{filterMode=mode;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();};
+window.abrirModal=()=>{document.getElementById('mTitle').value='';document.getElementById('mSynopsis').value='';document.getElementById('modalOverlay').classList.add('show');setTimeout(()=>document.getElementById('mTitle').focus(),100);};
+window.cerrarModal=()=>document.getElementById('modalOverlay').classList.remove('show');
+window.agregarItem=()=>{const title=document.getElementById('mTitle').value.trim();const synopsis=document.getElementById('mSynopsis').value.trim();if(!title)return;items.push({id:Date.now(),title,synopsis,rating:0,visto:false,img:''});addPending();cerrarModal();render();};
+function addPending(){pendingCount++;document.getElementById('pendingCount').textContent=pendingCount;document.getElementById('btnSave').disabled=false;}
+window.guardar=async()=>{const btn=document.getElementById('btnSave');btn.disabled=true;btn.textContent='Guardando...';try{await setDoc(doc(db,'pendientes',COLECCION),{items});pendingCount=0;document.getElementById('pendingCount').textContent=0;btn.textContent='✓ Guardado';setTimeout(()=>{btn.textContent='Guardar';},2000);}catch(e){console.error(e);btn.textContent='Error — reintentar';btn.disabled=false;}};
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))cerrarModal();});
+init();
+</script>
+</body>
+</html>
