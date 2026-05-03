@@ -92,6 +92,9 @@
 
   /* EMPTY STATE */
   .empty-state { padding:3rem; text-align:center; font-size:12px; color:var(--txt3); }
+  .poster-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; width:100%; height:100%; position:absolute; inset:0; }
+  .poster-placeholder .upload-icon { font-size:18px; }
+  .poster-placeholder .upload-hint { font-size:8px; letter-spacing:0.06em; color:var(--txt3); text-align:center; padding:0 6px; word-break:break-all; line-height:1.4; }
 
   /* SAVE BAR */
   .save-bar { position:fixed; bottom:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:0.8rem 2rem; background:rgba(7,5,15,0.95); backdrop-filter:blur(12px); border-top:1px solid var(--border); z-index:100; }
@@ -232,6 +235,11 @@ function render() {
   grid.innerHTML = filtered.map(it => renderCard(it)).join('');
 }
 
+function imgPath(title) {
+  // Construye la ruta local basada en el nombre del item
+  return `../imagenes/pendientes/${title}.jpg`;
+}
+
 function renderCard(it) {
   const rating = it.rating || 0;
   let symbols = '';
@@ -241,15 +249,19 @@ function renderCard(it) {
     symbols += `<span class="r-sym ${cls} ${active}" onclick="setRating(${it.id},${i+1})">${s}</span>`;
   }
 
-  const posterContent = it.img
-    ? `<img src="${it.img}" alt="${it.title}">`
-    : `<span class="upload-icon">🖼️</span><span class="upload-hint">subir imagen</span>`;
+  // Intenta cargar imagen local por nombre; si falla muestra placeholder
+  const localPath = imgPath(it.title);
 
   return `
     <div class="item-card ${it.visto ? 'visto' : ''}" id="card-${it.id}">
-      <div class="item-poster ${it.img ? 'has-img' : ''}" title="${it.img ? '' : 'Subir imagen'}">
-        ${posterContent}
-        ${!it.img ? `<input type="file" accept="image/*" onchange="subirImagen(${it.id}, this)">` : ''}
+      <div class="item-poster" id="poster-${it.id}">
+        <img src="${localPath}" alt="${it.title}"
+             onload="this.parentElement.classList.add('has-img')"
+             onerror="this.style.display='none';document.getElementById('ph-${it.id}').style.display='flex'">
+        <div id="ph-${it.id}" class="poster-placeholder" style="display:none">
+          <span class="upload-icon">🖼️</span>
+          <span class="upload-hint">${it.title}.jpg</span>
+        </div>
       </div>
       <div class="item-info">
         <div class="item-title">${it.title}</div>
