@@ -373,7 +373,268 @@
     <span class="link-arrow">→</span>
   </a>
 
+<style>
+  .bnh-wrap {
+    font-family: 'Space Mono', monospace;
+    padding: 1.5rem 0 0.5rem;
+  }
+  .bnh-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #a855f7;
+    margin-bottom: 1rem;
+  }
+  .bnh-card {
+    background: #0e0a1a;
+    border: 1px solid rgba(168,85,247,0.25);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bnh-img-wrap {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #07050f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .bnh-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.4s ease;
+  }
+  .bnh-img-wrap .bnh-placeholder {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: rgba(168,85,247,0.4);
+    text-transform: uppercase;
+  }
+  .bnh-map-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(168,85,247,0.85);
+    color: #07050f;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+  .bnh-footer {
+    padding: 0.85rem 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(168,85,247,0.18);
+    gap: 1rem;
+  }
+  .bnh-next-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .bnh-next-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #9d8fc4;
+  }
+  .bnh-next-map {
+    font-size: 12px;
+    color: #ede8ff;
+    letter-spacing: 0.05em;
+  }
+  .bnh-countdown {
+    font-size: 22px;
+    font-weight: 700;
+    color: #a855f7;
+    letter-spacing: 0.05em;
+    min-width: 90px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .bnh-cycle-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 0.9rem;
+    padding: 0 1px;
+  }
+  .bnh-pip {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(168,85,247,0.18);
+    position: relative;
+    overflow: hidden;
+  }
+  .bnh-pip.active {
+    background: rgba(168,85,247,0.35);
+  }
+  .bnh-pip-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background: #a855f7;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.5s linear;
+  }
+  .bnh-pip-label {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: #9d8fc4;
+    text-align: center;
+    margin-top: 4px;
+  }
+  .bnh-pip-label.active { color: #a855f7; }
+  .bnh-slot {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+</style>
+
+<div class="bnh-wrap">
+  <p class="bnh-label">// mapa activo — boku no hero</p>
+  <div class="bnh-card">
+    <div class="bnh-img-wrap" id="bnh-img-wrap">
+      <img id="bnh-img" src="" alt="Mapa activo" onerror="this.style.display='none'; document.getElementById('bnh-ph').style.display='block';" />
+      <span class="bnh-placeholder" id="bnh-ph" style="display:none">imagen no disponible</span>
+      <div class="bnh-map-badge" id="bnh-badge">MAPA —</div>
+    </div>
+    <div class="bnh-footer">
+      <div class="bnh-next-info">
+        <span class="bnh-next-label">próximo mapa</span>
+        <span class="bnh-next-map" id="bnh-next">—</span>
+      </div>
+      <div class="bnh-countdown" id="bnh-countdown">--:--</div>
+    </div>
+  </div>
+
+  <div class="bnh-cycle-row" id="bnh-cycle-row">
+    <div class="bnh-slot" id="slot-04">
+      <div class="bnh-pip" id="pip-04"><div class="bnh-pip-fill" id="fill-04"></div></div>
+      <span class="bnh-pip-label" id="lbl-04">04 · 2h</span>
+    </div>
+    <div class="bnh-slot" id="slot-03">
+      <div class="bnh-pip" id="pip-03"><div class="bnh-pip-fill" id="fill-03"></div></div>
+      <span class="bnh-pip-label" id="lbl-03">03 · 1h</span>
+    </div>
+    <div class="bnh-slot" id="slot-02">
+      <div class="bnh-pip" id="pip-02"><div class="bnh-pip-fill" id="fill-02"></div></div>
+      <span class="bnh-pip-label" id="lbl-02">02 · 1h</span>
+    </div>
+    <div class="bnh-slot" id="slot-01">
+      <div class="bnh-pip" id="pip-01"><div class="bnh-pip-fill" id="fill-01"></div></div>
+      <span class="bnh-pip-label" id="lbl-01">01 · 1h</span>
+    </div>
+  </div>
 </div>
+
+<script>
+(function() {
+  const IMG_BASE = '../imagenes/pendientes/BNH/';
+
+  const MAPS = ['04','03','02','01'];
+  const MAP_NAMES = { '04': 'Mapa 04', '03': 'Mapa 03', '02': 'Mapa 02', '01': 'Mapa 01' };
+  const MAP_DURATIONS = { '04': 120, '03': 60, '02': 60, '01': 60 };
+
+  function getCycleInfo() {
+    const now = new Date();
+    const utcSeconds = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+    const ANCHOR = 23 * 3600; // ciclo ancla a las 22:00 UTC
+    const cycleSeconds = 5 * 60 * 60;
+    const posSeconds = ((utcSeconds - ANCHOR) % cycleSeconds + cycleSeconds) % cycleSeconds;
+    const posMinutes = posSeconds / 60;
+
+    let map, elapsed, duration, nextMap;
+    if (posMinutes < 120) {
+      map = '04'; elapsed = posMinutes; duration = 120; nextMap = '03';
+    } else if (posMinutes < 180) {
+      map = '03'; elapsed = posMinutes - 120; duration = 60; nextMap = '02';
+    } else if (posMinutes < 240) {
+      map = '02'; elapsed = posMinutes - 180; duration = 60; nextMap = '01';
+    } else {
+      map = '01'; elapsed = posMinutes - 240; duration = 60; nextMap = '04';
+    }
+
+    const slotStartSeconds = (
+      map === '04' ? 0 :
+      map === '03' ? 120 * 60 :
+      map === '02' ? 180 * 60 : 240 * 60
+    );
+    const elapsedInSlot = posSeconds - slotStartSeconds;
+    const remainingSeconds = Math.max(0, duration * 60 - elapsedInSlot);
+    console.log('posSeconds:', posSeconds, 'slotStart:', slotStartSeconds, 'elapsedInSlot:', elapsedInSlot, 'remaining:', remainingSeconds);
+    const progress = (elapsedInSlot / (duration * 60)) * 100;
+
+    return { map, nextMap, remainingSeconds: remainingSeconds > 0 ? remainingSeconds : 0, progress };
+  }
+
+  function fmt(sec) {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    if (h > 0) {
+      return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+    return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }
+
+  function update() {
+    const info = getCycleInfo();
+    const img = document.getElementById('bnh-img');
+    const ph = document.getElementById('bnh-ph');
+    const badge = document.getElementById('bnh-badge');
+    const next = document.getElementById('bnh-next');
+    const cd = document.getElementById('bnh-countdown');
+
+    const imgPath = IMG_BASE + info.map + '.png';
+    if (img.getAttribute('data-map') !== info.map) {
+      img.setAttribute('data-map', info.map);
+      img.style.opacity = '0';
+      img.src = imgPath;
+      img.style.display = 'block';
+      ph.style.display = 'none';
+      setTimeout(() => { img.style.opacity = '1'; }, 50);
+    }
+
+    badge.textContent = 'MAPA ' + info.map;
+    next.textContent = MAP_NAMES[info.nextMap];
+    cd.textContent = fmt(info.remainingSeconds);
+
+    MAPS.forEach(m => {
+      const pip = document.getElementById('pip-' + m);
+      const fill = document.getElementById('fill-' + m);
+      const lbl = document.getElementById('lbl-' + m);
+      pip.classList.remove('active');
+      lbl.classList.remove('active');
+      fill.style.width = '0%';
+    });
+
+    const activePip = document.getElementById('pip-' + info.map);
+    const activeFill = document.getElementById('fill-' + info.map);
+    const activeLbl = document.getElementById('lbl-' + info.map);
+    activePip.classList.add('active');
+    activeLbl.classList.add('active');
+    activeFill.style.width = info.progress.toFixed(1) + '%';
+  }
+
+  update();
+  setInterval(update, 1000);
+})();
+</script>
+
+</div>
+
+
 
 <div class="footer">Ricardo Dodds — 2026</div>
 
