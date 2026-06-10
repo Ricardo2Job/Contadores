@@ -549,7 +549,7 @@
   function getCycleInfo() {
     const now = new Date();
     const utcSeconds = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
-    const ANCHOR = 23 * 3600; // ciclo ancla a las 22:00 UTC
+    const ANCHOR = 24 * 3600; // ciclo ancla a las 22:00 UTC
     const cycleSeconds = 5 * 60 * 60;
     const posSeconds = ((utcSeconds - ANCHOR) % cycleSeconds + cycleSeconds) % cycleSeconds;
     const posMinutes = posSeconds / 60;
